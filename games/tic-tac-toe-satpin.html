@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tic-Tac-Toe (s a t p i n)</title>
+  <style>
+    :root {
+      --gap: 12px;
+      --cell: min(22vw, 140px);
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #3a3a3a;
+      --muted: #6b6b6b;
+      --lavender: #c9b6e4;
+      --lavender-2: #d4c6ed;
+      --blue-soft: #eaf3ff;
+      --blue-line: #cfd6ff;
+      --win: #1b5cff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      width: min(520px, 92vw);
+      background: var(--card);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+
+    .sub {
+      font-size: 13px;
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin: 10px 0 14px;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      font-weight: 700;
+      padding: 8px 10px;
+      background: #f0f2ff;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      background: linear-gradient(180deg, var(--lavender), var(--lavender-2));
+      color: var(--text);
+      transition: transform .05s ease, opacity .15s ease, box-shadow .15s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,.08);
+    }
+
+    button.secondary {
+      background: #e9ecf7;
+      color: var(--text);
+    }
+
+    button:hover,
+    button:focus-visible {
+      box-shadow: 0 10px 20px rgba(0,0,0,.12);
+      outline: none;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, var(--cell));
+      gap: var(--gap);
+      justify-content: center;
+      user-select: none;
+    }
+
+    .cell {
+      position: relative;
+      width: var(--cell);
+      height: var(--cell);
+      border-radius: 18px;
+      background: #fafbff;
+      border: 2px solid #e6e8f5;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .05s ease, box-shadow .15s ease, border-color .15s ease;
+      overflow: hidden;
+    }
+
+    .cell:hover {
+      box-shadow: 0 8px 18px rgba(0,0,0,.06);
+      border-color: var(--blue-line);
+    }
+
+    .word {
+      font-size: clamp(18px, 3.8vw, 28px);
+      font-weight: 800;
+      letter-spacing: .5px;
+      text-transform: lowercase;
+      z-index: 1;
+    }
+
+    .mark {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: clamp(64px, 12vw, 96px);
+      background: rgba(255,255,255,.92);
+      opacity: 0;
+      transform: scale(.98);
+      transition: opacity .12s ease, transform .12s ease;
+      z-index: 2;
+    }
+
+    .cell.claimed .mark {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .cell.claimed {
+      cursor: not-allowed;
+    }
+
+    .cell.win {
+      border-color: var(--win);
+      box-shadow: 0 0 0 4px rgba(27,92,255,.15);
+      background: #f2f6ff;
+    }
+
+    .legend {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .legend code {
+      background: #f3f4f8;
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Крестики-нолики: только s a t p i n</h1>
+    <p class="sub">
+      В клетках — CVC-слова, составленные только из букв <b>s, a, t, p, i, n</b>.
+      Клик по клетке — поставить <b>X</b> или <b>O</b>. Победа в этой игре отправляет
+      сигнал в основной квест о том, что первое задание выполнено на максимум.
+    </p>
+
+    <div class="bar">
+      <div class="status" id="status">Ход: X</div>
+      <div class="btns">
+        <button class="secondary" id="newWordsBtn" title="Сменить слова в клетках">New words</button>
+        <button id="restartBtn" title="Сбросить игру">Restart</button>
+      </div>
+    </div>
+
+    <div class="grid" id="grid" aria-label="tic tac toe grid"></div>
+
+    <div class="legend">
+      Слова: <code>sat</code> <code>sap</code> <code>sip</code> <code>sin</code> <code>sit</code>
+      <code>pin</code> <code>pan</code> <code>pat</code> <code>pit</code> <code>tip</code>
+      <code>tap</code> <code>tan</code> <code>nap</code> <code>nip</code> <code>tin</code> <code>nit</code>
+    </div>
+  </div>
+
+  <script>
+    const WORDS = [
+      "sat", "sap", "sip", "sin", "sit",
+      "pin", "pan", "pat", "pit",
+      "tip", "tap", "tan",
+      "nap", "nip",
+      "tin", "nit"
+    ];
+
+    const gridEl = document.getElementById("grid");
+    const statusEl = document.getElementById("status");
+    const restartBtn = document.getElementById("restartBtn");
+    const newWordsBtn = document.getElementById("newWordsBtn");
+
+    let board = Array(9).fill(null);
+    let wordsInCells = Array(9).fill("");
+    let current = "X";
+    let gameOver = false;
+    let completionSent = false;
+
+    const WIN_LINES = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    function notifyParent(message) {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(message, "*");
+      }
+    }
+
+    function sendCompletionOnce() {
+      if (completionSent) return;
+      completionSent = true;
+      notifyParent("lesson1_completed_max");
+    }
+
+    function pick9Words() {
+      const pool = [...WORDS];
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      return pool.slice(0, 9);
+    }
+
+    function render() {
+      gridEl.innerHTML = "";
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell" + (board[i] ? " claimed" : "");
+        cell.dataset.idx = i;
+
+        const word = document.createElement("div");
+        word.className = "word";
+        word.textContent = wordsInCells[i];
+
+        const mark = document.createElement("div");
+        mark.className = "mark";
+        mark.textContent = board[i] || "";
+
+        cell.appendChild(word);
+        cell.appendChild(mark);
+        cell.addEventListener("click", () => onCellClick(i));
+        gridEl.appendChild(cell);
+      }
+    }
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function highlightWin(line) {
+      const cells = gridEl.querySelectorAll(".cell");
+      line.forEach((i) => cells[i].classList.add("win"));
+    }
+
+    function checkWinner() {
+      for (const line of WIN_LINES) {
+        const [a, b, c] = line;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return { winner: board[a], line };
+        }
+      }
+      if (board.every(Boolean)) return { winner: null, line: null };
+      return null;
+    }
+
+    function onCellClick(i) {
+      if (gameOver || board[i]) return;
+
+      board[i] = current;
+      render();
+
+      const res = checkWinner();
+      if (res) {
+        gameOver = true;
+
+        if (res.winner) {
+          setStatus(`Победа: ${res.winner}!`);
+          highlightWin(res.line);
+          sendCompletionOnce();
+        } else {
+          setStatus("Ничья!");
+        }
+
+        return;
+      }
+
+      current = current === "X" ? "O" : "X";
+      setStatus(`Ход: ${current}`);
+    }
+
+    function restart(keepWords = true) {
+      board = Array(9).fill(null);
+      current = "X";
+      gameOver = false;
+      if (!keepWords) wordsInCells = pick9Words();
+      setStatus("Ход: X");
+      render();
+    }
+
+    restartBtn.addEventListener("click", () => restart(true));
+    newWordsBtn.addEventListener("click", () => restart(false));
+
+    wordsInCells = pick9Words();
+    render();
+
+    notifyParent("lesson1_opened");
+  </script>
+</body>
+</html>

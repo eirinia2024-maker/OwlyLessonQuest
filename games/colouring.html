@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Phonics Coloring (embedded outline)</title>
+  <style>
+    :root{
+      --bg:#fbf7ff; --card:#ffffff; --ink:#2b2b2b; --muted:#6b7280;
+      --accent:#7c3aed; --border:rgba(0,0,0,.08);
+      --shadow:0 10px 30px rgba(0,0,0,.08);
+      --r:18px;
+    }
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 800px at 20% 0%, #f3e8ff 0%, transparent 60%),
+                  radial-gradient(1000px 700px at 80% 10%, #dcfce7 0%, transparent 55%),
+                  var(--bg);
+      color:var(--ink);
+    }
+    .wrap{max-width:1100px; margin:24px auto; padding:0 14px;}
+    .top{
+      display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;
+      background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+      box-shadow:var(--shadow); padding:14px;
+    }
+    h1{margin:0; font-size:18px;}
+    .sub{margin:2px 0 0; color:var(--muted); font-size:13px;}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .btn{
+      border:1px solid var(--border); background:#fff; border-radius:14px;
+      padding:10px 12px; cursor:pointer; font-weight:600;
+      display:inline-flex; gap:8px; align-items:center;
+      user-select:none;
+    }
+    .btn:hover{border-color:rgba(0,0,0,.18)}
+    .btn.primary{background:linear-gradient(180deg,#8b5cf6,#6d28d9); color:#fff; border-color:transparent;}
+    .btn.danger{background:#fff; border-color:rgba(239,68,68,.35); color:#b91c1c;}
+    .pill{
+      border:1px solid var(--border); border-radius:999px; padding:8px 10px; background:#fff;
+      display:flex; gap:10px; align-items:center;
+    }
+    label{font-size:12px; color:var(--muted);}
+    input[type="range"]{width:140px;}
+    .palette{display:flex; gap:8px; flex-wrap:wrap;}
+    .swatch{
+      width:28px; height:28px; border-radius:10px; border:2px solid rgba(0,0,0,.08);
+      cursor:pointer;
+      box-shadow:0 6px 14px rgba(0,0,0,.06);
+    }
+    .swatch.sel{outline:3px solid rgba(124,58,237,.35); border-color:rgba(124,58,237,.45);}
+    .main{
+      margin-top:12px;
+      background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+      box-shadow:var(--shadow); padding:14px;
+    }
+    .stage{
+      position:relative;
+      width:100%;
+      aspect-ratio: 4 / 3;
+      background:linear-gradient(180deg,#ffffff,#fafafa);
+      border:1px dashed rgba(0,0,0,.14);
+      border-radius:16px;
+      overflow:hidden;
+      touch-action:none;
+    }
+    canvas{position:absolute; inset:0; width:100%; height:100%;}
+    .hint{
+      margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      color:var(--muted); font-size:13px;
+    }
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:12px;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div style="min-width:260px; flex:1;">
+      <h1>Раскраска (встроенный контур) + звук</h1>
+      <div class="sub">Контур уже внутри игры. Нажимай 🔊 и раскрашивай кистью. Можно сохранить результат.</div>
+      <div class="sub"><span class="kbd">Пробел</span> = проиграть задание, <span class="kbd">E</span> = ластик, <span class="kbd">Ctrl+Z</span> = undo, <span class="kbd">1–8</span> = цвета.</div>
+    </div>
+
+    <div class="row" style="flex:2;">
+      <button class="btn primary" id="btnPlayTask">🔊 Play task</button>
+      <button class="btn" id="btnNextTask">➡️ Next</button>
+
+      <div class="pill">
+        <label>Brush</label>
+        <input id="size" type="range" min="2" max="40" value="14" />
+        <span class="kbd" id="sizeVal">14</span>
+      </div>
+
+      <button class="btn" id="btnEraser">🧽 Eraser</button>
+      <button class="btn" id="btnUndo">↩️ Undo</button>
+      <button class="btn danger" id="btnClear">🗑️ Clear</button>
+      <button class="btn" id="btnSave">💾 Save PNG</button>
+    </div>
+
+    <div class="palette" id="palette" style="width:100%;"></div>
+  </div>
+
+  <div class="main">
+    <div class="stage" id="stage">
+      <canvas id="paint"></canvas>
+      <canvas id="line"></canvas>
+    </div>
+
+    <div class="hint">
+      <div>Рисуй мышью/пальцем. <b>Shift</b> = ровная линия.</div>
+      <div id="taskLabel"><b>Task:</b> нажмите “Play task”.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ====== 1) ПУТЬ К КОНТУРУ (встроено без загрузки) ======
+  // Положи файл рядом с HTML:  img/outline.png
+  const OUTLINE_SRC = "img/outline.png";
+
+  // ====== 2) Палитра ======
+  const COLORS = ["#ef4444","#f59e0b","#22c55e","#06b6d4","#3b82f6","#8b5cf6","#ec4899","#111827"];
+
+  // ====== 3) Задания + аудио (положи mp3/ogg в папку audio/) ======
+  const TASKS = [
+    { text: "Color the cat red.",   audio: "audio/task1.mp3" },
+    { text: "Color the hat blue.",  audio: "audio/task2.mp3" },
+    { text: "Find /æ/ and color it green.", audio: "audio/task3.mp3" },
+    { text: "Color all sh words purple.",   audio: "audio/task4.mp3" },
+  ];
+
+  const stage = document.getElementById("stage");
+  const paint = document.getElementById("paint");
+  const line  = document.getElementById("line");
+  const pctx  = paint.getContext("2d");
+  const lctx  = line.getContext("2d");
+
+  const btnEraser = document.getElementById("btnEraser");
+  const btnUndo = document.getElementById("btnUndo");
+  const btnClear = document.getElementById("btnClear");
+  const btnSave = document.getElementById("btnSave");
+  const btnPlayTask = document.getElementById("btnPlayTask");
+  const btnNextTask = document.getElementById("btnNextTask");
+  const size = document.getElementById("size");
+  const sizeVal = document.getElementById("sizeVal");
+  const palette = document.getElementById("palette");
+  const taskLabel = document.getElementById("taskLabel");
+
+  let brushColor = COLORS[0];
+  let brushSize = +size.value;
+  let erasing = false;
+
+  let drawing = false;
+  let last = null;
+
+  let savedStates = [];
+  const MAX_UNDO = 25;
+
+  let outlineImg = new Image();
+  outlineImg.crossOrigin = "anonymous";
+  let outlineLoaded = false;
+
+  let taskIndex = 0;
+  let currentAudio = null;
+
+  function renderPalette() {
+    palette.innerHTML = "";
+    COLORS.forEach((c, i) => {
+      const d = document.createElement("div");
+      d.className = "swatch" + (i === 0 ? " sel" : "");
+      d.style.background = c;
+      d.title = `Color ${i+1}`;
+      d.addEventListener("click", () => selectColor(i));
+      palette.appendChild(d);
+    });
+  }
+  function selectColor(i) {
+    erasing = false;
+    brushColor = COLORS[i];
+    [...palette.children].forEach((el, idx) => el.classList.toggle("sel", idx === i));
+    btnEraser.classList.remove("primary");
+  }
+
+  function updateTaskLabel(){
+    const t = TASKS[taskIndex];
+    taskLabel.innerHTML = `<b>Task:</b> ${t ? t.text : ""}`;
+  }
+
+  function playTask(i = taskIndex){
+    taskIndex = i;
+    updateTaskLabel();
+    const t = TASKS[taskIndex];
+    if (!t || !t.audio) return;
+
+    try {
+      if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+      currentAudio = new Audio(t.audio);
+      currentAudio.play().catch(() => {
+        alert("Не удалось проиграть аудио. Проверь, что файл существует и путь правильный (папка audio/ рядом с HTML).");
+      });
+    } catch (e) {
+      alert("Аудио не поддерживается в этом браузере/среде.");
+    }
+  }
+
+  function fitCanvases() {
+    const r = stage.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    [paint, line].forEach(cv => {
+      cv.width = Math.round(r.width * dpr);
+      cv.height = Math.round(r.height * dpr);
+      cv.style.width = r.width + "px";
+      cv.style.height = r.height + "px";
+      const ctx = cv.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+    });
+
+    redrawOutline();
+  }
+
+  function redrawOutline(){
+    const r = stage.getBoundingClientRect();
+    const w = r.width, h = r.height;
+    lctx.clearRect(0,0,w,h);
+
+    if (!outlineLoaded) {
+      lctx.save();
+      lctx.fillStyle = "rgba(0,0,0,.45)";
+      lctx.font = "14px system-ui";
+      lctx.fillText("Outline is loading…", 16, 28);
+      lctx.restore();
+      return;
+    }
+
+    const iw = outlineImg.width, ih = outlineImg.height;
+    const scale = Math.min(w / iw, h / ih);
+    const dw = iw * scale, dh = ih * scale;
+    const dx = (w - dw) / 2, dy = (h - dh) / 2;
+
+    lctx.drawImage(outlineImg, dx, dy, dw, dh);
+  }
+
+  function pushUndo(){
+    try {
+      if (savedStates.length >= MAX_UNDO) savedStates.shift();
+      savedStates.push(pctx.getImageData(0,0, paint.width, paint.height));
+    } catch(e){
+      savedStates = [];
+    }
+  }
+  function undo(){
+    const st = savedStates.pop();
+    if (st) pctx.putImageData(st, 0, 0);
+  }
+  function clearPaint(){
+    pushUndo();
+    const r = stage.getBoundingClientRect();
+    pctx.clearRect(0,0,r.width,r.height);
+  }
+
+  function getPos(evt){
+    const r = stage.getBoundingClientRect();
+    return { x: evt.clientX - r.left, y: evt.clientY - r.top };
+  }
+
+  function drawSeg(a, b){
+    pctx.save();
+    pctx.lineCap = "round";
+    pctx.lineJoin = "round";
+    pctx.lineWidth = brushSize;
+    pctx.strokeStyle = brushColor;
+    pctx.globalCompositeOperation = erasing ? "destination-out" : "source-over";
+
+    pctx.beginPath();
+    pctx.moveTo(a.x, a.y);
+    pctx.lineTo(b.x, b.y);
+    pctx.stroke();
+    pctx.restore();
+  }
+
+  function start(evt){
+    drawing = true;
+    pushUndo();
+    const pos = getPos(evt);
+    last = pos;
+
+    pctx.save();
+    pctx.globalCompositeOperation = erasing ? "destination-out" : "source-over";
+    pctx.fillStyle = brushColor;
+    pctx.beginPath();
+    pctx.arc(pos.x, pos.y, brushSize/2, 0, Math.PI*2);
+    pctx.fill();
+    pctx.restore();
+  }
+
+  function move(evt){
+    if (!drawing) return;
+    const pos = getPos(evt);
+    drawSeg(last, pos);
+    last = pos;
+  }
+
+  function end(){ drawing = false; last = null; }
+
+  // ====== Инструменты ======
+  btnEraser.addEventListener("click", () => {
+    erasing = !erasing;
+    btnEraser.classList.toggle("primary", erasing);
+  });
+  btnUndo.addEventListener("click", undo);
+  btnClear.addEventListener("click", clearPaint);
+
+  btnSave.addEventListener("click", () => {
+    const r = stage.getBoundingClientRect();
+    const out = document.createElement("canvas");
+    out.width = Math.round(r.width);
+    out.height = Math.round(r.height);
+    const o = out.getContext("2d");
+    o.drawImage(paint, 0, 0, out.width, out.height);
+    o.drawImage(line, 0, 0, out.width, out.height);
+
+    const a = document.createElement("a");
+    a.download = "coloring.png";
+    a.href = out.toDataURL("image/png");
+    a.click();
+  });
+
+  // ====== Аудио ======
+  btnPlayTask.addEventListener("click", () => playTask(taskIndex));
+  btnNextTask.addEventListener("click", () => {
+    taskIndex = (taskIndex + 1) % TASKS.length;
+    updateTaskLabel();
+    playTask(taskIndex);
+  });
+
+  size.addEventListener("input", () => {
+    brushSize = +size.value;
+    sizeVal.textContent = brushSize;
+  });
+
+  stage.addEventListener("pointerdown", (e) => { stage.setPointerCapture(e.pointerId); start(e); });
+  stage.addEventListener("pointermove", move);
+  stage.addEventListener("pointerup", end);
+  stage.addEventListener("pointercancel", end);
+  stage.addEventListener("pointerleave", end);
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key >= "1" && e.key <= "8") selectColor(parseInt(e.key, 10) - 1);
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
+    if (e.key.toLowerCase() === "e") { erasing = !erasing; btnEraser.classList.toggle("primary", erasing); }
+    if (e.key === " ") { e.preventDefault(); playTask(taskIndex); }
+  });
+
+  // ====== Автозагрузка контура ======
+  function loadOutline(){
+    outlineImg = new Image();
+    outlineImg.onload = () => { outlineLoaded = true; redrawOutline(); };
+    outlineImg.onerror = () => {
+      outlineLoaded = false;
+      redrawOutline();
+      alert("Не нашла контур. Проверь, что файл лежит по пути: " + OUTLINE_SRC);
+    };
+    outlineImg.src = OUTLINE_SRC;
+  }
+
+  // init
+  renderPalette();
+  fitCanvases();
+  window.addEventListener("resize", fitCanvases);
+
+  loadOutline();
+  updateTaskLabel();
+})();
+</script>
+</body>
+</html>
