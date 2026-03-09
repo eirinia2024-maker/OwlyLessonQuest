@@ -28,87 +28,119 @@
     }
 
     .page {
-      max-width: 1200px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 18px 16px 28px;
+      padding: 18px 16px 20px;
     }
 
-    .top-card,
-    .palette-card,
+    .layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+    }
+
+    .sidebar,
     .game-card {
-      background: rgba(255, 255, 255, 0.94);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 26px;
       box-shadow: var(--shadow);
-      padding: 16px;
-      margin-bottom: 16px;
     }
 
-    .top-card,
+    .sidebar {
+      border: 3px solid var(--lavender);
+      padding: 16px;
+      position: sticky;
+      top: 12px;
+    }
+
     .game-card {
       border: 3px solid var(--lavender);
+      padding: 14px;
+    }
+
+    .title {
+       margin: 0 0 12px;
+  font-size: clamp(18px, 2vw, 26px);
+  line-height: 1.1;
+  white-space: nowrap;
+    }
+
+    .side-block {
+      border-radius: 22px;
+      margin-bottom: 14px;
+      padding: 14px;
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(100, 90, 130, 0.08);
+    }
+
+    .instruction-card {
+       border: 3px solid var(--green);
+  background: var(--lavender-soft);
+  padding: 10px;
+}
+
+.instruction-title,
+.palette-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.instruction-steps {
+  display: grid;
+  gap: 8px;
+}
+
+.instruction-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.65);
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.step-icon {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(100, 90, 130, 0.08);
+  font-size: 16px;
     }
 
     .palette-card {
       border: 3px solid var(--green);
-    }
-
-    .title {
-      margin: 0 0 12px;
-      font-size: clamp(24px, 4vw, 34px);
-      line-height: 1.1;
-    }
-
-    .instruction-strip {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      background: var(--lavender-soft);
-      border: 2px solid var(--green);
-      border-radius: 999px;
-      padding: 12px 16px;
-      font-weight: 700;
-      font-size: clamp(15px, 2.2vw, 20px);
-    }
-
-    .instruction-step {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,0.55);
-      border-radius: 999px;
-      padding: 8px 12px;
-    }
-
-    .arrow {
-      font-size: 22px;
-      line-height: 1;
-      color: #7d6aa7;
-    }
-
-    .palette-title {
-      margin: 0 0 12px;
-      font-size: 20px;
+      background: rgba(255,255,255,0.98);
     }
 
     .palette {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
       min-height: 88px;
     }
 
     .color-btn {
       appearance: none;
       border: 3px solid transparent;
-      border-radius: 20px;
+      border-radius: 18px;
       background: #fff;
       cursor: pointer;
       padding: 10px 8px;
-      min-height: 88px;
+      min-height: 82px;
       box-shadow: 0 6px 14px rgba(100, 90, 130, 0.12);
-      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+      transition:
+        transform 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        opacity 0.2s ease;
       color: var(--ink);
       font: inherit;
       font-weight: 700;
@@ -137,21 +169,40 @@
       border: 2px solid #444;
     }
 
+    .status-card {
+      border: 3px solid var(--green-soft);
+      background: #fff;
+    }
+
+    .status-title {
+      margin: 0 0 10px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
     .status-bar {
-      margin-top: 14px;
       background: var(--yellow-pale);
       border: 2px solid var(--yellow-soft);
       border-radius: 18px;
-      padding: 12px 14px;
+      padding: 14px 12px;
       font-size: 18px;
       font-weight: 700;
-      min-height: 52px;
+      min-height: 84px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
     }
+.status-inline-wrap {
+  margin-top: 12px;
+}
 
+.status-inline-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
     .status-bar.error {
       background: #ffe7e7;
       border-color: #f2aaaa;
@@ -222,7 +273,7 @@
     .hs-tap      { left: 81%; top: 57%; width: 18%; height: 28%; }
 
     .footer-note {
-      margin-top: 12px;
+      margin-top: 10px;
       text-align: center;
       font-size: 14px;
       color: #756a8d;
@@ -285,75 +336,116 @@
       filter: brightness(0.98);
     }
 
-    @media (max-width: 700px) {
-      .page { padding: 12px 10px 18px; }
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
 
-      .top-card, .palette-card, .game-card {
+      .sidebar {
+        position: static;
+      }
+
+      .palette {
+        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      }
+
+      .status-bar {
+        min-height: 56px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        padding: 12px 10px 18px;
+      }
+
+      .sidebar,
+      .game-card {
         border-radius: 20px;
         padding: 12px;
       }
 
-      .instruction-step {
-        width: 100%;
-        justify-content: center;
+      .side-block {
+        border-radius: 18px;
+        padding: 12px;
       }
 
-      .arrow { display: none; }
-      .status-bar { font-size: 16px; }
+      .instruction-step {
+        font-size: 16px;
+      }
+
+      .status-bar {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <section class="top-card">
-      <h1 class="title">Colour with Owly</h1>
+    <div class="layout">
+      <aside class="sidebar">
+        <h1 class="title">Colour with Owly</h1>
 
-      <div class="instruction-strip" aria-label="How to play">
-        <span class="instruction-step">👆 Tap</span>
-        <span class="arrow">→</span>
-        <span class="instruction-step">🔊 Listen</span>
-        <span class="arrow">→</span>
-        <span class="instruction-step">🎨 Colour</span>
-      </div>
-    </section>
+        <section class="side-block instruction-card" aria-label="How to play">
+          <h2 class="instruction-title">How to play</h2>
+          <div class="instruction-steps">
+            <div class="instruction-step">
+              <span class="step-icon">👆</span>
+              <span>Tap a colour</span>
+            </div>
+            <div class="instruction-step">
+              <span class="step-icon">🔊</span>
+              <span>Listen</span>
+            </div>
+            <div class="instruction-step">
+              <span class="step-icon">🎨</span>
+              <span>Colour</span>
+            </div>
+          </div>
+        </section>
 
-    <section class="palette-card">
-      <h2 class="palette-title">Choose a colour</h2>
-      <div class="palette" id="palette"></div>
-      <div id="statusBar" class="status-bar">Tap a colour and listen.</div>
-    </section>
+        <section class="side-block palette-card">
+          <h2 class="palette-title">Choose a colour</h2>
+          <div class="palette" id="palette"></div>
+        </section>
 
-    <section class="game-card">
-      <div class="game-wrap">
-        <img class="layer" src="./images/base.png" alt="Colouring page" />
+              </aside>
 
-        <img class="layer overlay" id="layer-sun" src="./images/sun.png" alt="" />
-        <img class="layer overlay" id="layer-apple" src="./images/apple.png" alt="" />
-        <img class="layer overlay" id="layer-snake" src="./images/snake.png" alt="" />
-        <img class="layer overlay" id="layer-ant" src="./images/ant.png" alt="" />
-        <img class="layer overlay" id="layer-mountain" src="./images/mountain.png" alt="" />
-        <img class="layer overlay" id="layer-tap" src="./images/tap.png" alt="" />
-        <img class="layer overlay" id="layer-s" src="./images/s.png" alt="" />
-        <img class="layer overlay" id="layer-a" src="./images/a.png" alt="" />
-        <img class="layer overlay" id="layer-t" src="./images/t.png" alt="" />
+      <section class="game-card">
+        <div class="game-wrap">
+          <img class="layer" src="./images/base.png" alt="Colouring page" />
 
-        <button class="hotspot hs-s" data-object="s" aria-label="Letter S"></button>
-        <button class="hotspot hs-mountain" data-object="mountain" aria-label="Mountain"></button>
-        <button class="hotspot hs-snake" data-object="snake" aria-label="Snake"></button>
+          <img class="layer overlay" id="layer-sun" src="./images/sun.png" alt="" />
+          <img class="layer overlay" id="layer-apple" src="./images/apple.png" alt="" />
+          <img class="layer overlay" id="layer-snake" src="./images/snake.png" alt="" />
+          <img class="layer overlay" id="layer-ant" src="./images/ant.png" alt="" />
+          <img class="layer overlay" id="layer-mountain" src="./images/mountain.png" alt="" />
+          <img class="layer overlay" id="layer-tap" src="./images/tap.png" alt="" />
+          <img class="layer overlay" id="layer-s" src="./images/s.png" alt="" />
+          <img class="layer overlay" id="layer-a" src="./images/a.png" alt="" />
+          <img class="layer overlay" id="layer-t" src="./images/t.png" alt="" />
 
-        <button class="hotspot hs-sun" data-object="sun" aria-label="Sun"></button>
-        <button class="hotspot hs-apple" data-object="apple" aria-label="Apple"></button>
-        <button class="hotspot hs-a" data-object="a" aria-label="Letter a"></button>
+          <button class="hotspot hs-s" data-object="s" aria-label="Letter S"></button>
+          <button class="hotspot hs-mountain" data-object="mountain" aria-label="Mountain"></button>
+          <button class="hotspot hs-snake" data-object="snake" aria-label="Snake"></button>
 
-        <button class="hotspot hs-ant" data-object="ant" aria-label="Ant"></button>
-        <button class="hotspot hs-t" data-object="t" aria-label="Letter t"></button>
-        <button class="hotspot hs-tap" data-object="tap" aria-label="Tap symbol"></button>
-      </div>
+          <button class="hotspot hs-sun" data-object="sun" aria-label="Sun"></button>
+          <button class="hotspot hs-apple" data-object="apple" aria-label="Apple"></button>
+          <button class="hotspot hs-a" data-object="a" aria-label="Letter a"></button>
 
-      <div class="footer-note">
-        Tap a colour, listen, then tap the correct picture or letter.
-      </div>
-    </section>
+          <button class="hotspot hs-ant" data-object="ant" aria-label="Ant"></button>
+          <button class="hotspot hs-t" data-object="t" aria-label="Letter t"></button>
+          <button class="hotspot hs-tap" data-object="tap" aria-label="Tap symbol"></button>
+        </div>
+<section class="status-inline-wrap">
+  <div class="status-inline-title">Message</div>
+  <div id="statusBar" class="status-bar">Tap a colour and listen.</div>
+</section>
+        <div class="footer-note">
+          Tap a colour, listen, then tap the correct picture or letter.
+        </div>
+      </section>
+    </div>
   </div>
 
   <div class="finish-overlay" id="finishOverlay">
@@ -370,11 +462,11 @@
       { key: "apple",    colorName: "red",    colorHex: "#F44336", label: "apple",    audio: "./audio/colour-apple.mp3" },
       { key: "snake",    colorName: "green",  colorHex: "#4CAF50", label: "snake",    audio: "./audio/colour-snake.mp3" },
       { key: "ant",      colorName: "brown",  colorHex: "#B36A2E", label: "ant",      audio: "./audio/colour-ant.mp3" },
-      { key: "mountain", colorName: "blue",   colorHex: "#3498DB", label: "mountain", audio: "./audio/colour-mountain.mp3" },
+      { key: "mountain", colorName: "blue",   colorHex: "#3498DB", label: "mountain", audio: "./audio/colour-top.mp3" },
       { key: "tap",      colorName: "pink",   colorHex: "#FF7AC8", label: "tap",      audio: "./audio/colour-tap.mp3" },
       { key: "s",        colorName: "purple", colorHex: "#9C27B0", label: "letter S", audio: "./audio/colour-s.mp3" },
       { key: "a",        colorName: "orange", colorHex: "#FF9800", label: "letter a", audio: "./audio/colour-a.mp3" },
-      { key: "t",        colorName: "black",  colorHex: "#222222", label: "letter t", audio: "././audio/colour-t.mp3" }
+      { key: "t",        colorName: "black",  colorHex: "#222222", label: "letter t", audio: "./audio/colour-t.mp3" }
     ];
 
     const itemMap = Object.fromEntries(items.map(item => [item.key, item]));
@@ -394,6 +486,113 @@
         currentAudio.currentTime = 0;
       }
     }
+
+    function playAudio(src) {
+      stopAudio();
+      currentAudio = new Audio(src);
+      currentAudio.play().catch(() => {
+        setStatus("Audio could not play.", "error");
+      });
+    }
+
+    function setStatus(text, type = "") {
+      statusBar.textContent = text;
+      statusBar.className = "status-bar";
+      if (type) statusBar.classList.add(type);
+    }
+
+    function updatePaletteActive() {
+      document.querySelectorAll(".color-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.key === currentChoice);
+      });
+    }
+
+    function removeColorFromPalette(key) {
+      const btn = document.querySelector(`.color-btn[data-key="${key}"]`);
+      if (!btn) return;
+      btn.classList.add("used");
+      setTimeout(() => {
+        btn.remove();
+      }, 220);
+    }
+
+    function chooseColor(key) {
+      if (colored.has(key)) return;
+
+      currentChoice = key;
+      updatePaletteActive();
+
+      const item = itemMap[key];
+      playAudio(item.audio);
+      setStatus(`Listen and colour the ${item.label}.`);
+    }
+
+    function showLayer(key) {
+      const layer = document.getElementById(`layer-${key}`);
+      if (layer) layer.classList.add("visible");
+    }
+
+    function showFinishOverlay() {
+      finishOverlay.classList.add("show");
+    }
+
+    function checkComplete() {
+      if (colored.size === items.length) {
+        setStatus("Well Done!", "success");
+        setTimeout(showFinishOverlay, 350);
+      }
+    }
+
+    items.forEach(item => {
+      const button = document.createElement("button");
+      button.className = "color-btn";
+      button.type = "button";
+      button.dataset.key = item.key;
+      button.innerHTML = `
+        <div class="swatch" style="background:${item.colorHex}; ${item.colorName === 'black' ? 'border-color:#999;' : ''}"></div>
+        <div>${item.colorName}</div>
+      `;
+      button.addEventListener("click", () => chooseColor(item.key));
+      palette.appendChild(button);
+    });
+
+    hotspots.forEach(hotspot => {
+      hotspot.addEventListener("click", () => {
+        const clickedObject = hotspot.dataset.object;
+
+        if (!currentChoice) {
+          setStatus("Tap a colour first.", "error");
+          return;
+        }
+
+        const target = itemMap[currentChoice];
+
+        if (clickedObject === currentChoice) {
+          if (!colored.has(currentChoice)) {
+            colored.add(currentChoice);
+            showLayer(currentChoice);
+            removeColorFromPalette(currentChoice);
+            setStatus(`Great! You coloured the ${target.label}.`, "success");
+            currentChoice = null;
+            updatePaletteActive();
+            checkComplete();
+          }
+        } else {
+          setStatus("Try again.", "error");
+        }
+      });
+    });
+
+    finishBtn.addEventListener("click", () => {
+      finishOverlay.classList.remove("show");
+
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage("coloring_completed", "*");
+      }
+    });
+  </script>
+</body>
+</html>
 
     function playAudio(src) {
       stopAudio();
