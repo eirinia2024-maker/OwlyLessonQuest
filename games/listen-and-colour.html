@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Owly Colour Game</title>
+  <style>
+    :root {
+      --lavender: #C9B6E4;
+      --lavender-soft: #D4C6ED;
+      --green: #BFDDB8;
+      --green-soft: #D6EED0;
+      --yellow-soft: #F6D97A;
+      --yellow-pale: #F2E2A2;
+      --ink: #4b4360;
+      --danger: #e96b6b;
+      --success: #5aa469;
+      --shadow: 0 10px 24px rgba(120, 100, 160, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top, #faf7ff 0%, #f7f2ff 35%, #f6fbf5 100%);
+      color: var(--ink);
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 16px 28px;
+    }
+
+    .top-card,
+    .palette-card,
+    .game-card {
+      background: rgba(255, 255, 255, 0.94);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .top-card,
+    .game-card {
+      border: 3px solid var(--lavender);
+    }
+
+    .palette-card {
+      border: 3px solid var(--green);
+    }
+
+    .title {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.1;
+    }
+
+    .instruction-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: var(--lavender-soft);
+      border: 2px solid var(--green);
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: clamp(15px, 2.2vw, 20px);
+    }
+
+    .instruction-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.55);
+      border-radius: 999px;
+      padding: 8px 12px;
+    }
+
+    .arrow {
+      font-size: 22px;
+      line-height: 1;
+      color: #7d6aa7;
+    }
+
+    .palette-title {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap: 12px;
+      min-height: 88px;
+    }
+
+    .color-btn {
+      appearance: none;
+      border: 3px solid transparent;
+      border-radius: 20px;
+      background: #fff;
+      cursor: pointer;
+      padding: 10px 8px;
+      min-height: 88px;
+      box-shadow: 0 6px 14px rgba(100, 90, 130, 0.12);
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+    }
+
+    .color-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .color-btn.active {
+      border-color: var(--lavender);
+      box-shadow: 0 0 0 4px rgba(201, 182, 228, 0.28);
+    }
+
+    .color-btn.used {
+      opacity: 0;
+      transform: scale(0.9);
+      pointer-events: none;
+    }
+
+    .swatch {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      margin: 0 auto 8px;
+      border: 2px solid #444;
+    }
+
+    .status-bar {
+      margin-top: 14px;
+      background: var(--yellow-pale);
+      border: 2px solid var(--yellow-soft);
+      border-radius: 18px;
+      padding: 12px 14px;
+      font-size: 18px;
+      font-weight: 700;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .status-bar.error {
+      background: #ffe7e7;
+      border-color: #f2aaaa;
+      color: #a33d3d;
+    }
+
+    .status-bar.success {
+      background: #e8f8e7;
+      border-color: #afd7ae;
+      color: #397847;
+    }
+
+    .game-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #fff;
+      border: 2px solid #e8def7;
+    }
+
+    .game-wrap img.layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    .overlay {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .overlay.visible {
+      opacity: 1;
+    }
+
+    .hotspot {
+      position: absolute;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 20;
+      padding: 0;
+    }
+
+    .hotspot:focus-visible {
+      outline: 3px dashed var(--lavender);
+      outline-offset: 2px;
+      border-radius: 16px;
+    }
+
+    .hs-s        { left: 2%;  top: 6%;  width: 21%; height: 28%; }
+    .hs-mountain { left: 30%; top: 5%;  width: 26%; height: 24%; }
+    .hs-snake    { left: 73%; top: 4%;  width: 25%; height: 28%; }
+
+    .hs-sun      { left: 3%;  top: 33%; width: 23%; height: 25%; }
+    .hs-apple    { left: 37%; top: 34%; width: 26%; height: 26%; }
+    .hs-a        { left: 78%; top: 35%; width: 17%; height: 24%; }
+
+    .hs-ant      { left: 18%; top: 59%; width: 35%; height: 25%; }
+    .hs-t        { left: 63%; top: 60%; width: 15%; height: 23%; }
+    .hs-tap      { left: 81%; top: 57%; width: 18%; height: 28%; }
+
+    .footer-note {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+      color: #756a8d;
+    }
+
+    .finish-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(70, 55, 100, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+    }
+
+    .finish-overlay.show {
+      display: flex;
+    }
+
+    .finish-card {
+      width: min(440px, 100%);
+      background: #fff;
+      border: 3px solid var(--lavender);
+      border-radius: 28px;
+      box-shadow: 0 18px 40px rgba(70, 55, 100, 0.25);
+      padding: 28px 22px 22px;
+      text-align: center;
+    }
+
+    .finish-title {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 5vw, 42px);
+      color: var(--ink);
+    }
+
+    .finish-text {
+      margin: 0 0 20px;
+      font-size: 18px;
+      color: #6d6285;
+    }
+
+    .finish-btn {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+      font-size: 18px;
+      padding: 14px 28px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(100, 90, 130, 0.15);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .finish-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(0.98);
+    }
+
+    @media (max-width: 700px) {
+      .page { padding: 12px 10px 18px; }
+
+      .top-card, .palette-card, .game-card {
+        border-radius: 20px;
+        padding: 12px;
+      }
+
+      .instruction-step {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .arrow { display: none; }
+      .status-bar { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="top-card">
+      <h1 class="title">Colour with Owly</h1>
+
+      <div class="instruction-strip" aria-label="How to play">
+        <span class="instruction-step">👆 Tap</span>
+        <span class="arrow">→</span>
+        <span class="instruction-step">🔊 Listen</span>
+        <span class="arrow">→</span>
+        <span class="instruction-step">🎨 Colour</span>
+      </div>
+    </section>
+
+    <section class="palette-card">
+      <h2 class="palette-title">Choose a colour</h2>
+      <div class="palette" id="palette"></div>
+      <div id="statusBar" class="status-bar">Tap a colour and listen.</div>
+    </section>
+
+    <section class="game-card">
+      <div class="game-wrap">
+        <img class="layer" src="./images/base.png" alt="Colouring page" />
+
+        <img class="layer overlay" id="layer-sun" src="./images/sun.png" alt="" />
+        <img class="layer overlay" id="layer-apple" src="./images/apple.png" alt="" />
+        <img class="layer overlay" id="layer-snake" src="./images/snake.png" alt="" />
+        <img class="layer overlay" id="layer-ant" src="./images/ant.png" alt="" />
+        <img class="layer overlay" id="layer-mountain" src="./images/mountain.png" alt="" />
+        <img class="layer overlay" id="layer-tap" src="./images/tap.png" alt="" />
+        <img class="layer overlay" id="layer-s" src="./images/s.png" alt="" />
+        <img class="layer overlay" id="layer-a" src="./images/a.png" alt="" />
+        <img class="layer overlay" id="layer-t" src="./images/t.png" alt="" />
+
+        <button class="hotspot hs-s" data-object="s" aria-label="Letter S"></button>
+        <button class="hotspot hs-mountain" data-object="mountain" aria-label="Mountain"></button>
+        <button class="hotspot hs-snake" data-object="snake" aria-label="Snake"></button>
+
+        <button class="hotspot hs-sun" data-object="sun" aria-label="Sun"></button>
+        <button class="hotspot hs-apple" data-object="apple" aria-label="Apple"></button>
+        <button class="hotspot hs-a" data-object="a" aria-label="Letter a"></button>
+
+        <button class="hotspot hs-ant" data-object="ant" aria-label="Ant"></button>
+        <button class="hotspot hs-t" data-object="t" aria-label="Letter t"></button>
+        <button class="hotspot hs-tap" data-object="tap" aria-label="Tap symbol"></button>
+      </div>
+
+      <div class="footer-note">
+        Tap a colour, listen, then tap the correct picture or letter.
+      </div>
+    </section>
+  </div>
+
+  <div class="finish-overlay" id="finishOverlay">
+    <div class="finish-card">
+      <h2 class="finish-title">Well Done!</h2>
+      <p class="finish-text">You finished the colouring game.</p>
+      <button class="finish-btn" id="finishBtn" type="button">Finish</button>
+    </div>
+  </div>
+
+  <script>
+    const items = [
+      { key: "sun",      colorName: "yellow", colorHex: "#FFD84D", label: "sun",      audio: "./audio/colour-sun.mp3" },
+      { key: "apple",    colorName: "red",    colorHex: "#F44336", label: "apple",    audio: "./audio/colour-apple.mp3" },
+      { key: "snake",    colorName: "green",  colorHex: "#4CAF50", label: "snake",    audio: "./audio/colour-snake.mp3" },
+      { key: "ant",      colorName: "brown",  colorHex: "#B36A2E", label: "ant",      audio: "./audio/colour-ant.mp3" },
+      { key: "mountain", colorName: "blue",   colorHex: "#3498DB", label: "mountain", audio: "./audio/colour-mountain.mp3" },
+      { key: "tap",      colorName: "pink",   colorHex: "#FF7AC8", label: "tap",      audio: "./audio/colour-tap.mp3" },
+      { key: "s",        colorName: "purple", colorHex: "#9C27B0", label: "letter S", audio: "./audio/colour-s.mp3" },
+      { key: "a",        colorName: "orange", colorHex: "#FF9800", label: "letter a", audio: "./audio/colour-a.mp3" },
+      { key: "t",        colorName: "black",  colorHex: "#222222", label: "letter t", audio: "./audio/colourt.mp3" }
+    ];
+
+    const itemMap = Object.fromEntries(items.map(item => [item.key, item]));
+    const statusBar = document.getElementById("statusBar");
+    const palette = document.getElementById("palette");
+    const hotspots = document.querySelectorAll(".hotspot");
+    const finishOverlay = document.getElementById("finishOverlay");
+    const finishBtn = document.getElementById("finishBtn");
+
+    let currentChoice = null;
+    let currentAudio = null;
+    const colored = new Set();
+
+    function stopAudio() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+    }
+
+    function playAudio(src) {
+      stopAudio();
+      currentAudio = new Audio(src);
+      currentAudio.play().catch(() => {
+        setStatus("Audio could not play.", "error");
+      });
+    }
+
+    function setStatus(text, type = "") {
+      statusBar.textContent = text;
+      statusBar.className = "status-bar";
+      if (type) statusBar.classList.add(type);
+    }
+
+    function updatePaletteActive() {
+      document.querySelectorAll(".color-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.key === currentChoice);
+      });
+    }
+
+    function removeColorFromPalette(key) {
+      const btn = document.querySelector(`.color-btn[data-key="${key}"]`);
+      if (!btn) return;
+      btn.classList.add("used");
+      setTimeout(() => {
+        btn.remove();
+      }, 220);
+    }
+
+    function chooseColor(key) {
+      if (colored.has(key)) return;
+
+      currentChoice = key;
+      updatePaletteActive();
+
+      const item = itemMap[key];
+      playAudio(item.audio);
+      setStatus(`Listen and colour the ${item.label}.`);
+    }
+
+    function showLayer(key) {
+      const layer = document.getElementById(`layer-${key}`);
+      if (layer) layer.classList.add("visible");
+    }
+
+    function showFinishOverlay() {
+      finishOverlay.classList.add("show");
+    }
+
+    function checkComplete() {
+      if (colored.size === items.length) {
+        setStatus("Well Done!", "success");
+        setTimeout(showFinishOverlay, 350);
+      }
+    }
+
+    items.forEach(item => {
+      const button = document.createElement("button");
+      button.className = "color-btn";
+      button.type = "button";
+      button.dataset.key = item.key;
+      button.innerHTML = `
+        <div class="swatch" style="background:${item.colorHex}; ${item.colorName === 'black' ? 'border-color:#999;' : ''}"></div>
+        <div>${item.colorName}</div>
+      `;
+      button.addEventListener("click", () => chooseColor(item.key));
+      palette.appendChild(button);
+    });
+
+    hotspots.forEach(hotspot => {
+      hotspot.addEventListener("click", () => {
+        const clickedObject = hotspot.dataset.object;
+
+        if (!currentChoice) {
+          setStatus("Tap a colour first.", "error");
+          return;
+        }
+
+        const target = itemMap[currentChoice];
+
+        if (clickedObject === currentChoice) {
+          if (!colored.has(currentChoice)) {
+            colored.add(currentChoice);
+            showLayer(currentChoice);
+            removeColorFromPalette(currentChoice);
+            setStatus(`Great! You coloured the ${target.label}.`, "success");
+            currentChoice = null;
+            updatePaletteActive();
+            checkComplete();
+          }
+        } else {
+          setStatus("Try again.", "error");
+        }
+      });
+    });
+
+    finishBtn.addEventListener("click", () => {
+  finishOverlay.classList.remove("show");
+
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage("coloring_completed", "*");
+  }
+    });
+  </script>
+</body>
+</html>

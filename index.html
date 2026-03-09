@@ -408,9 +408,10 @@
     }
 
     .modal-card {
-      max-height: 88vh;
-      display: flex;
-      flex-direction: column;
+       width: min(1260px, 96vw);
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
     }
 
     .modal-header,
@@ -453,37 +454,33 @@
     }
 
     .modal-body {
-      padding: 18px 22px 22px;
-      display: grid;
-      gap: 14px;
-      min-height: 540px;
+       padding: 10px 22px 22px;
+  display: grid;
+  gap: 14px;
+  min-height: 760px;
     }
 
     .modal-help {
-      margin: 0;
-      color: var(--text-2);
-      font-size: 0.95rem;
-      line-height: 1.5;
+      display: none;
     }
 
     .iframe-shell {
       flex: 1;
-      min-height: 420px;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid rgba(58,58,58,0.08);
-      background:
-        linear-gradient(135deg, rgba(191,220,235,0.28), rgba(201,182,228,0.28));
-      position: relative;
+  min-height: 620px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(58,58,58,0.08);
+  background: linear-gradient(135deg, rgba(191,220,235,0.28), rgba(201,182,228,0.28));
+  position: relative;
     }
 
     .iframe-shell iframe {
-      display: block;
-      width: 100%;
-      height: 100%;
-      min-height: 420px;
-      border: none;
-      background: #fff;
+       display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 620px;
+  border: none;
+  background: #fff;
     }
 
     .iframe-placeholder {
@@ -909,6 +906,7 @@
             <button class="dev-btn" type="button" data-dev="lesson2_opened">lesson2_opened</button>
             <button class="dev-btn" type="button" data-dev="lesson2_completed_max">lesson2_completed_max</button>
             <button class="dev-btn" type="button" data-dev="coloring_opened">coloring_opened</button>
+            <button class="dev-btn" type="button" data-dev="coloring_completed">coloring_completed</button>
             <button class="dev-btn" type="button" data-dev="reset_all">Сбросить всё</button>
           </div>
         </section>
@@ -1024,16 +1022,17 @@
       "use strict";
 
       const lesson1Url = "./games/tic-tac-toe-satpin.html";
-      const lesson2Url = "lesson2Url";
-      const coloringUrl = "coloringUrl";
+      const lesson2Url = "./games/listen-and-choose.html";
+      const coloringUrl = "./games/listen-and-colour.html";
 	  const lesson1VideoUrl = "./media/lesson1-intro.mp4";
 
       const STORAGE_KEYS = {
         lesson1Opened: "lesson1Opened",
-        lesson1CompletedMax: "lesson1CompletedMax",
-        lesson2Opened: "lesson2Opened",
-        lesson2CompletedMax: "lesson2CompletedMax",
-        coloringOpened: "coloringOpened"
+  lesson1CompletedMax: "lesson1CompletedMax",
+  lesson2Opened: "lesson2Opened",
+  lesson2CompletedMax: "lesson2CompletedMax",
+  coloringOpened: "coloringOpened",
+  coloringCompleted: "coloringCompleted"
       };
 
       const btnLesson1 = document.getElementById("btnLesson1");
@@ -1090,10 +1089,11 @@ const endingImage = document.getElementById("endingImage");
       function getState() {
         return {
           lesson1Opened: getBool(STORAGE_KEYS.lesson1Opened),
-          lesson1CompletedMax: getBool(STORAGE_KEYS.lesson1CompletedMax),
-          lesson2Opened: getBool(STORAGE_KEYS.lesson2Opened),
-          lesson2CompletedMax: getBool(STORAGE_KEYS.lesson2CompletedMax),
-          coloringOpened: getBool(STORAGE_KEYS.coloringOpened)
+    lesson1CompletedMax: getBool(STORAGE_KEYS.lesson1CompletedMax),
+    lesson2Opened: getBool(STORAGE_KEYS.lesson2Opened),
+    lesson2CompletedMax: getBool(STORAGE_KEYS.lesson2CompletedMax),
+    coloringOpened: getBool(STORAGE_KEYS.coloringOpened),
+    coloringCompleted: getBool(STORAGE_KEYS.coloringCompleted)
         };
       }
 
@@ -1116,7 +1116,7 @@ const endingImage = document.getElementById("endingImage");
       }
 
       function isFullSuccess(state = getState()) {
-        return state.lesson1CompletedMax && state.lesson2CompletedMax && state.coloringOpened;
+  return state.lesson1CompletedMax && state.lesson2CompletedMax && state.coloringCompleted;
       }
 
       const previewMap = {
@@ -1129,25 +1129,25 @@ const endingImage = document.getElementById("endingImage");
   lesson1: {
     chip: "Описание текущего задания",
     title: "Послушать учителя у доски",
-    text: "Это первое задание. Owly изучает новые буквы вместе с учителем. Пока оно не выполнено на максимум, остальные учебные этапы останутся закрыты.",
+    text: "Это первое задание. Помоги Аули выучить новые буквы вместе с учителем. Пока оно не выполнено на максимум, остальные учебные этапы останутся закрыты.",
     image: "./img/teacher-board.png"
   },
   lesson2: {
     chip: "Описание текущего задания",
     title: "Поработать на планшете",
-    text: "Это второе задание. Здесь Owly тренируется в интерактивных упражнениях. Оно станет доступно только после успешного выполнения первого этапа.",
+    text: "Это второе задание. Здесь Аули тренируется, чтобы лучше запомнить новые буквы. Оно станет доступно после успешного выполнения первого этапа.",
     image: "./img/tablet.png"
   },
   coloring: {
     chip: "Описание текущего задания",
     title: "Раскрасить картинку",
-    text: "Это третий этап. После основных заданий Owly закрепляет материал через раскрашивание. Это спокойная и творческая часть квеста.",
+    text: "Это третий этап. После основных заданий Аули может заполнить свою любимую раскраску.",
     image: "./img/colouring-book.png"
   },
   walk: {
     chip: "Описание текущего задания",
     title: "Пойти погулять",
-    text: "Это кнопка завершения. Если все задания сделаны хорошо, Owly получит радостный финал. Если он старался не до конца, финал будет нейтральным.",
+    text: "Ну что? Всё выучено? Идём гулять?",
     image: "./img/classroom.png"
         }
       };
@@ -1202,14 +1202,14 @@ const endingImage = document.getElementById("endingImage");
         }
 
         if (!isColoringUnlocked(state)) {
-          setBadge(badgeColoring, "Закрыто", "locked");
-          updateButtonState(btnColoring, "locked");
-        } else if (state.coloringOpened) {
-          setBadge(badgeColoring, "Выполнено", "completed");
-          updateButtonState(btnColoring, "completed");
-        } else {
-          setBadge(badgeColoring, "Доступно", "available");
-          updateButtonState(btnColoring, "default");
+  setBadge(badgeColoring, "Закрыто", "locked");
+  updateButtonState(btnColoring, "locked");
+} else if (state.coloringCompleted) {
+  setBadge(badgeColoring, "Выполнено", "completed");
+  updateButtonState(btnColoring, "completed");
+} else {
+  setBadge(badgeColoring, "Доступно", "available");
+  updateButtonState(btnColoring, "default");
         }
       }
 
@@ -1252,7 +1252,7 @@ const endingImage = document.getElementById("endingImage");
         if (activityFrameShell) activityFrameShell.hidden = true;
         if (iframePlaceholder) iframePlaceholder.style.display = "none";
         if (activityFrame) activityFrame.src = "about:blank";
-        modalHelp.textContent = "Сначала посмотри объяснение букв, затем перейди к игре.";
+        if (modalHelp) modalHelp.textContent = "Сначала посмотри объяснение букв, затем перейди к игре.";
 
         if (lesson1Video) {
           lesson1Video.pause();
@@ -1270,7 +1270,7 @@ const endingImage = document.getElementById("endingImage");
         if (lesson1VideoScreen) lesson1VideoScreen.hidden = true;
         if (activityFrameShell) activityFrameShell.hidden = false;
 
-        modalHelp.textContent = helpText;
+        if (modalHelp) modalHelp.textContent = helpText;
 
         const isRealUrl = /^(https?:\/\/|\.\/|\.\.\/|\/)/i.test(url);
         iframePlaceholder.style.display = isRealUrl ? "none" : "grid";
@@ -1289,7 +1289,7 @@ const endingImage = document.getElementById("endingImage");
         if (lesson1VideoScreen) lesson1VideoScreen.hidden = true;
         if (activityFrameShell) activityFrameShell.hidden = false;
 
-        modalHelp.textContent = config.helpText;
+        if (modalHelp) modalHelp.textContent = config.helpText;
         const isRealUrl = /^(https?:\/\/|\.\/|\.\.\/|\/)/i.test(config.url);
         iframePlaceholder.style.display = isRealUrl ? "none" : "grid";
         activityFrame.src = isRealUrl ? config.url : "about:blank";
@@ -1366,8 +1366,8 @@ const endingImage = document.getElementById("endingImage");
           return;
         }
 
-        if (state.coloringOpened) {
-          showTeacherPopup("Раскраска уже была открыта. Можно идти дальше.");
+        if (state.coloringCompleted) {
+          showTeacherPopup("Раскраска уже завершена.");
           return;
         }
 
@@ -1377,7 +1377,7 @@ const endingImage = document.getElementById("endingImage");
         openActivityModal({
           title: "Раскрасить картинку",
           helpText:
-            "Здесь позже можно встроить раскраску. Игра может отправлять событие coloring_opened через window.postMessage.",
+            "Здесь встроена раскраска. Игра может отправлять события coloring_opened и coloring_completed через window.postMessage.",
           url: coloringUrl
         });
       }
@@ -1417,8 +1417,14 @@ const endingImage = document.getElementById("endingImage");
             setBool(STORAGE_KEYS.lesson2CompletedMax, true);
             break;
           case "coloring_opened":
-            setBool(STORAGE_KEYS.coloringOpened, true);
-            break;
+  setBool(STORAGE_KEYS.coloringOpened, true);
+  break;
+
+case "coloring_completed":
+  setBool(STORAGE_KEYS.coloringOpened, true);
+  setBool(STORAGE_KEYS.coloringCompleted, true);
+  closeOverlay(modalOverlay);
+  break;
           default:
             return;
         }
